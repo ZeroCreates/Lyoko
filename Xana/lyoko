@@ -1,0 +1,417 @@
+
+
+local gate = peripheral.find("advanced_crystal_interface")
+-- Peripheral names
+local waytower = peripheral.wrap("redstoneIntegrator_2")
+local xana = peripheral.wrap("redstoneIntegrator_3")
+local supercomputer = peripheral.wrap("redstoneIntegrator_4")
+
+local gates = {ice = "15-9-2-26-19-34-7-30", desert = "29-28-24-27-26-8-32-21", mountain = "2-14-1-8-3-18-9-22", forest = "28-17-6-30-34-2-8-21"}
+
+local towerTypeFile = "tower_type.txt" -- file to store tower type
+local towerType = ""
+local peripheralName = ""
+function split(input, delimiter)
+    local result = {}
+    for part in string.gmatch(input, "([^" .. delimiter .. "]+)") do table.insert(result, part) end
+    return result
+  end
+function dial(addressraw)
+    encoding = 1
+    if not gate.getIrisProgress == nil then
+      local irisopen = gate.getIrisProgress()
+      if irisopen > 0 then
+        
+        local iris = gate.openIris()
+        if iris == true then
+  
+          repeat
+            irisopen = gate.getIrisProgress()
+            sleep(.1)
+          until irisopen == 0
+        end
+      end
+    end
+    
+    address = split(addressraw, "-")
+    for _, symbol in pairs(address) do
+      gate.engageSymbol(tonumber(symbol))
+      sleep(1)
+    end
+    gate.engageSymbol(0)
+  end
+
+-- Helper: Centered print
+local function printCentered(text, color)
+    term.setTextColor(color or colors.white)
+    local width, height = term.getSize()
+    term.setCursorPos(math.floor((width - #text) / 2) + 1, math.floor(height / 2))
+    term.clear()
+    print(text)
+end
+
+-- Helper: Flash screen
+local function flashScreen(times, color)
+    for i = 1, times do
+        term.setBackgroundColor(color)
+        term.clear()
+        sleep(0.1)
+        term.setBackgroundColor(colors.black)
+        term.clear()
+        sleep(0.1)
+    end
+end
+-- Set up tower type
+local function setupTowerType()
+    if fs.exists(towerTypeFile) then
+        -- Load saved type
+        local file = fs.open(towerTypeFile, "r")
+        towerType = file.readLine()
+        file.close()
+    else
+        -- Ask
+        term.setBackgroundColor(colors.black)
+        term.clear()
+        printCentered("Tower Type Setup", colors.yellow)
+        sleep(1)
+        term.setCursorPos(1, 1)
+        term.setTextColor(colors.white)
+        print("Is this tower NORMAL, XANA, or SUPERCOMPUTER controlled? (normal/xana/supercomputer)")
+        towerType = read()
+        towerType = towerType:lower()
+
+        if towerType ~= "waytower" and towerType ~= "xana" and towerType ~= "supercomputer" and towerType ~= "normal"then
+            printCentered("Invalid tower type!", colors.red)
+            sleep(2)
+            os.reboot()
+        end
+
+        -- Save
+        local file = fs.open(towerTypeFile, "w")
+        file.writeLine(towerType)
+        file.close()
+        printCentered("Tower type saved as "..towerType, colors.green)
+        sleep(2)
+    end
+
+    -- Set correct redstone peripheral
+    if towerType == "waytower" then
+        peripheralName = waytower
+        peripheralName.setOutput("back", true)
+    elseif towerType == "xana" then
+        peripheralName = xana
+        peripheralName.setOutput("back", true)
+    elseif towerType == "supercomputer" then
+        peripheralName = supercomputer
+        peripheralName.setOutput("back", true)
+    elseif towerType == "normal" then
+        peripheralName = "normal"
+    else
+        printCentered("Error loading tower type.", colors.red)
+        sleep(2)
+        os.shutdown()
+    end
+end
+
+-- Save tower as XANA controlled
+local function convertToXana()
+    towerType = "xana"
+    peripheralName = xana
+    peripheralName.setOutput("back", true)
+
+    local file = fs.open(towerTypeFile, "w")
+    file.writeLine(towerType)
+    file.close()
+
+    flashScreen(4, colors.red)
+    printCentered("Tower corrupted by XANA!", colors.red)
+    
+    sleep(2)
+end
+
+-- Save tower as SUPERCOMPUTER controlled
+local function convertToSupercomputer()
+    towerType = "supercomputer"
+    peripheralName = supercomputer
+    peripheralName.setOutput("back", true)
+
+    local file = fs.open(towerTypeFile, "w")
+    file.writeLine(towerType)
+    file.close()
+
+    flashScreen(4, colors.green)
+    printCentered("Tower linked to SUPERCOMPUTER!", colors.green)
+    sleep(2)
+end
+
+-- Toggle tower redstone
+local function toggleTower()
+    if towerType ~= "normal" then
+        peripheralName.setOutput("back", false)
+        if towerType == "xana" or towerType == "supercomputer" then
+            towerType = "normal"
+            peripheralName = "normal"
+            local file = fs.open(towerTypeFile, "w")
+            file.writeLine(towerType)
+            file.close()
+            flashScreen(5, colors.lightBlue)
+            printCentered("Tower DEACTIVATED", colors.blue)
+        else
+            printCentered(towerType.." Tower DEACTIVATED", colors.gray)
+        end
+    end
+    sleep(2)
+end
+
+gate.setEnergyTarget(10000000000)
+-- Gate
+function guide()
+    print("Enter Location: ")
+    local input = read():lower()
+    if input == "mountain" then
+        flashScreen(2, colors.yellow)
+        printCentered("Please Wait", colors.green)
+        dial(gates.mountain)
+        repeat
+            sleep(.1)
+        until gate.isWormholeOpen and gate.isWormholeOpen()
+        flashScreen(6, colors.yellow)
+        printCentered("Guide Open", colors.green)
+        local event = {}
+        local eventName = ""
+        repeat
+            event = {os.pullEvent()}
+            eventName = event[1]
+        until eventName == "stargate_deconstructing_entity"
+        gate.disconnectStargate()
+
+    elseif input == "ice" then
+        flashScreen(2, colors.yellow)
+        printCentered("Please Wait", colors.green)
+        dial(gates.ice)
+        repeat
+            sleep(.1)
+        until gate.isWormholeOpen and gate.isWormholeOpen()
+        flashScreen(6, colors.yellow)
+        printCentered("Guide Open", colors.green)
+        local event = {}
+        local eventName = ""
+        repeat
+            event = {os.pullEvent()}
+            eventName = event[1]
+        until eventName == "stargate_deconstructing_entity"
+        gate.disconnectStargate()
+    elseif input == "desert" then
+        flashScreen(2, colors.yellow)
+        printCentered("Please Wait", colors.green)
+        dial(gates.desert)
+        repeat
+            sleep(.1)
+        until gate.isWormholeOpen and gate.isWormholeOpen()
+        flashScreen(6, colors.yellow)
+        printCentered("Guide Open", colors.green)
+        local event = {}
+        local eventName = ""
+        repeat
+            event = {os.pullEvent()}
+            eventName = event[1]
+        until eventName == "stargate_deconstructing_entity"
+        gate.disconnectStargate()
+
+    elseif input == "forest" then
+        flashScreen(2, colors.yellow)
+        printCentered("Please Wait", colors.green)
+        dial(gates.forest)
+        repeat
+            sleep(.1)
+        until gate.isWormholeOpen and gate.isWormholeOpen()
+        flashScreen(6, colors.yellow)
+        printCentered("Guide Open", colors.green)
+        local event = {}
+        local eventName = ""
+        repeat
+            event = {os.pullEvent()}
+            eventName = event[1]
+        until eventName == "stargate_deconstructing_entity"
+        gate.disconnectStargate()
+
+    else
+        flashScreen(2, colors.red)
+        printCentered("Access Denied", colors.red)
+        sleep(2)
+    end
+end
+
+
+setupTowerType()
+local function idleMode()
+    term.setBackgroundColor(colors.black)
+    term.clear()
+    printCentered("TOWER SLEEP MODE", colors.gray)
+    sleep(1)
+    term.setCursorPos(1, 2)
+    term.setTextColor(colors.lightGray)
+    print("Awaiting WAKE signal from Supercomputer...")
+    print("Press ENTER to wake manually.")
+end
+
+-- Initialize
+rednet.open("back") -- or your modem side
+
+idleMode()
+-- Await wake-up
+while true do
+    local event, param1, param2, param3 = os.pullEvent()
+
+    if event == "rednet_message" and param3 == "8080" then
+        local message = param2
+        if message.command then
+            local cmd = message.command:lower()
+
+            if cmd == "wake" then
+                -- WAKE signal received
+                flashScreen(3, colors.white)
+                setupTowerType()
+                break -- exit wake loop
+            end
+        elseif message.request == "identify" then
+            -- respond to scan
+            rednet.send(param1, {response="tower", towerType=towerType}, "8080")
+        end
+    elseif event == "key" then
+        local key = param1
+        -- If any key is pressed (like ENTER), wake up
+        flashScreen(3, colors.white)
+        setupTowerType()
+        break -- exit wake loop
+    end
+end
+
+-- STARTUP SEQUENCE
+term.setBackgroundColor(colors.black)
+term.clear()
+printCentered("Initializing Lyoko Tower...", colors.blue)
+sleep(2)
+-- Normal tower operating mode
+function inputsetup()
+    while true do
+        term.setBackgroundColor(colors.black)
+        term.clear()
+        printCentered("Tower: "..towerType:upper(), colors.cyan)
+    
+        local input = nil
+    
+        term.clear()
+        printCentered("CODE", colors.lightBlue)
+        term.setCursorPos(1, 1)
+        term.setTextColor(colors.white)
+        write("Enter code: ")
+        input = read():lower()
+
+    
+        if input then
+            if input == "lyoko" then
+                flashScreen(2, colors.blue)
+                toggleTower()
+            elseif input == "xana control" and towerType == "normal" then
+                convertToXana()
+            elseif input == "supercomputer control" and towerType == "normal" then
+                convertToSupercomputer()
+            elseif input == "guide" then
+                if towerType == "waytower" then
+                    guide()
+                else
+                    flashScreen(2, colors.red)
+                    printCentered("Not A Waytower", colors.red)
+                    sleep(2)
+                end
+            elseif input == "earth" then
+                if towerType == "waytower" then
+                    flashScreen(2, colors.yellow)
+                    printCentered("Please Wait", colors.green)
+                    dial("25-17-8-20-22-3-15-31")
+                    repeat
+                        sleep(.1)
+                    until gate.isWormholeOpen and gate.isWormholeOpen()
+                    flashScreen(6, colors.purple)
+                    printCentered("Opened", colors.green)
+                    local event = {}
+                    local eventName = ""
+                    repeat
+                        event = {os.pullEvent()}
+                        eventName = event[1]
+                    until eventName == "stargate_deconstructing_entity"
+                    gate.disconnectStargate()
+                else
+                    flashScreen(2, colors.red)
+                    printCentered("Not A Waytower", colors.red)
+                    sleep(2)
+                end
+                
+            elseif input == "sleep" then
+                os.reboot()
+            else
+                flashScreen(2, colors.red)
+                printCentered("Access Denied", colors.red)
+                sleep(2)
+            end
+        end
+    end
+end
+function rednetsetup()
+    while true do
+        local event, param1, param2, param3 = os.pullEvent()
+        if event == "rednet_message" and param3 == "8080" then
+            local message = param2
+            if message.request == "identify" then
+                -- respond to scan
+                rednet.send(param1, {response="tower", towerType=towerType}, "8080")
+            elseif message.request == "rift" then
+                rednet.send(param1, {response="rift", address=table.concat(gate.getLocalAddress(), "-")}, "8080")
+            elseif message.command then
+                input = message.command:lower()
+            end
+            if input then
+                if input == "xana control" and towerType == "normal" then
+                    convertToXana()
+                elseif input == "supercomputer control" and towerType == "normal" then
+                    convertToSupercomputer()
+                elseif input == "guide" then
+                    if towerType == "waytower" then
+                        guide()
+                    else
+                        flashScreen(2, colors.red)
+                        printCentered("Not A Waytower", colors.red)
+                        sleep(2)
+                    end
+                elseif input == "earth" then
+                    if towerType == "waytower" then
+                        flashScreen(2, colors.yellow)
+                        printCentered("Please Wait", colors.green)
+                        dial("25-17-8-20-22-3-15-31")
+                        repeat
+                            sleep(.1)
+                        until gate.isWormholeOpen and gate.isWormholeOpen()
+                        flashScreen(6, colors.purple)
+                        printCentered("Opened", colors.green)
+                        local event = {}
+                        local eventName = ""
+                        repeat
+                            event = {os.pullEvent()}
+                            eventName = event[1]
+                        until eventName == "stargate_deconstructing_entity"
+                        gate.disconnectStargate()
+                    else
+                        flashScreen(2, colors.red)
+                        printCentered("Not A Waytower", colors.red)
+                        sleep(2)
+                    end
+                elseif input == "sleep" then
+                    os.reboot()
+                end
+            end
+        end
+        
+    end
+end
+parallel.waitForAll(rednetsetup,inputsetup)
