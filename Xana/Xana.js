@@ -1,6 +1,8 @@
 let eventint = 0
 let eventtriggerer = null
-
+let eventinfo = {}
+let jevent = 0
+let jeventinfo = {}
 ServerEvents.commandRegistry(event => {
     const { commands: Commands } = event;
 
@@ -13,7 +15,7 @@ ServerEvents.commandRegistry(event => {
                 const players = server.getPlayerList().getPlayers();
                 const lanteaWorld = server.getLevel('sgjourney:lantea');
                 const executingPlayer = ctx.source.player;
-                const attack = Math.floor(Math.random() * 4) + 1; // Random number 1-4
+                const attack = Math.floor(Math.random() * 5) + 1; // Random number 1-4
                 
                 const storagePos = BlockPos(8347, 221, -15717); 
                 
@@ -82,6 +84,22 @@ ServerEvents.commandRegistry(event => {
                         
                         eventint = 4
                         break;
+                    case 5:
+                        let playersls = []
+                        players.forEach(player => {
+                            let name = player.username 
+                            if (eventtriggerer != name){
+                                playersls.push(name)
+                            }
+                        });
+                        eventinfo.possesed = playersls[Math.floor(Math.random() * playersls.length)];
+                        server.runCommandSilent('tellraw @a ["",{"text":"<","bold":true,"color":"black"},{"text":"XANA","bold":true,"color":"dark_red"},{"text":">","bold":true,"color":"black"},{"text":"I now speak through this vessel.","color":"red"}]')
+                        server.runCommandSilent(`tellraw ${eventinfo.possesed} ["",{"text":"<","bold":true,"color":"black"},{"text":"XANA","bold":true,"color":"dark_red"},{"text":">","bold":true,"color":"black"},{"text":"You are mine now do my bidding.","color":"red"}]`)
+
+                        executingPlayer.tell("Trigger Possess Event")
+                        
+                        eventint = 5
+                        break;
                 }
 
                 return 1;
@@ -98,8 +116,8 @@ ServerEvents.commandRegistry(event => {
                 players.forEach(player => {
                     let name = player.username 
                     server.runCommandSilent(`effect clear ${name}`)
-                    server.runCommandSilent(`kill @e[name="XanaCorrupted"]`)
                 });
+                server.runCommandSilent(`kill @e[name="XanaCorrupted"]`)
                 server.runCommandSilent(`weather clear`)
                 server.runCommandSilent(`say $xana attack trigger tower remove`)
                 server.runCommandSilent('tellraw @a ["",{"text":"XANA ","bold":true,"color":"dark_red"},{"text":"Has Canceled Their Attack","color":"red"}]')
@@ -117,12 +135,13 @@ ServerEvents.commandRegistry(event => {
                 players.forEach(player => {
                     let name = player.username 
                     server.runCommandSilent(`effect clear ${name}`)
-                    server.runCommandSilent(`kill @e[name="XanaCorrupted"]`)
                 });
+                server.runCommandSilent(`kill @e[name="XanaCorrupted"]`)
                 server.runCommandSilent(`weather clear`)
                 return 1;
             })
     );
+    
 });
 ServerEvents.tick(event => {
     if (eventint == 0) return;
@@ -159,7 +178,13 @@ ServerEvents.tick(event => {
                     server.runCommandSilent(`effect give ${name} minecraft:night_vision 10 1`)
                 }
             break;
+        case 5:
+                if (eventinfo.possesed != name){
+                    server.runCommandSilent(`effect give ${name} minecraft:resistance 10 255`)
+                    server.runCommandSilent(`effect give ${name} minecraft:strength 10 3`)
+                }
+            break;
             }
-      } 
+      }
     });
   });
