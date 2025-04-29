@@ -325,10 +325,13 @@ function inputsetup()
             if input == "lyoko" then
                 flashScreen(2, colors.blue)
                 toggleTower()
+                os.reboot()
             elseif input == "xana control" and towerType == "normal" then
                 convertToXana()
+                os.reboot()
             elseif input == "supercomputer control" and towerType == "normal" then
                 convertToSupercomputer()
+                os.reboot()
             elseif input == "guide" then
                 if towerType == "waytower" then
                     guide()
@@ -386,8 +389,10 @@ function rednetsetup()
             if input then
                 if input == "xana control" and towerType == "normal" then
                     convertToXana()
+                    os.reboot()
                 elseif input == "supercomputer control" and towerType == "normal" then
                     convertToSupercomputer()
+                    os.reboot()
                 elseif input == "guide" then
                     if towerType == "waytower" then
                         guide()
@@ -421,6 +426,7 @@ function rednetsetup()
                 elseif input == "code lyoko xana" then
                     if towerType == "xana" then
                         toggleTower()
+                        os.reboot()
                     end
                 elseif input == "sleep" then
                     os.reboot()

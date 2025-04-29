@@ -38,13 +38,16 @@ ServerEvents.commandRegistry(event => {
 
                     case 2:
                         players.forEach(player => {
-
-                            for (let i = 0; i < 5; i++) {
-                                const x = player.getX() + Math.random() * 6 - 3;
-                                const y = player.getY();
-                                const z = player.getZ() + Math.random() * 6 - 3;
+                            let currentDim = player.level.dimension.toString();
+                            if (currentDim == "minecraft:overworld"){
                                 
-                                server.runCommandSilent(`summon minecraft:zombie ${x} ${y} ${z} {CustomName:'[{"text":"XanaCorrupted"}]',Health:10000000,Invulnerable:1b,PersistenceRequired:1b,ActiveEffects:[{Id:21,Duration:1000000000,Amplifier:255,ShowParticles:0b},{Id:11,Duration:1000000000,Amplifier:255,ShowParticles:0b},{Id:5,Duration:1000000000,Amplifier:2,ShowParticles:0b}],Attributes:[{Name:"generic.max_health",Base:10000000f}]}`)
+                                for (let i = 0; i < 5; i++) {
+                                    const x = player.getX() + Math.random() * 6 - 3;
+                                    const y = player.getY();
+                                    const z = player.getZ() + Math.random() * 6 - 3;
+                                
+                                    server.runCommandSilent(`summon minecraft:zombie ${x} ${y} ${z} {CustomName:'[{"text":"XanaCorrupted"}]',Health:10000000,Invulnerable:1b,PersistenceRequired:1b,ActiveEffects:[{Id:21,Duration:1000000000,Amplifier:255,ShowParticles:0b},{Id:11,Duration:1000000000,Amplifier:255,ShowParticles:0b},{Id:5,Duration:1000000000,Amplifier:2,ShowParticles:0b}],Attributes:[{Name:"generic.max_health",Base:10000000f}]}`)
+                                }
                             }
                         });
 
@@ -98,8 +101,9 @@ ServerEvents.commandRegistry(event => {
                     server.runCommandSilent(`kill @e[name="XanaCorrupted"]`)
                 });
                 server.runCommandSilent(`weather clear`)
-                lanteaWorld.server.runCommandSilent(`say $xana attack trigger tower remove`)
+                server.runCommandSilent(`say $xana attack trigger tower remove`)
                 server.runCommandSilent('tellraw @a ["",{"text":"XANA ","bold":true,"color":"dark_red"},{"text":"Has Canceled Their Attack","color":"red"}]')
+                return 1;
             })
     );
     event.register(
@@ -116,6 +120,7 @@ ServerEvents.commandRegistry(event => {
                     server.runCommandSilent(`kill @e[name="XanaCorrupted"]`)
                 });
                 server.runCommandSilent(`weather clear`)
+                return 1;
             })
     );
 });
@@ -123,46 +128,38 @@ ServerEvents.tick(event => {
     if (eventint == 0) return;
     if (event.server.tickCount % 20 !== 0) return; // Check every 1 seconds (20 ticks)
     const server = event.server
-    event.server.getPlayerList().getPlayers().forEach(p => {
-      let currentDim = p.level.dimension().location().toString();
+    const players = server.getPlayerList().getPlayers();
+    event.server.getPlayerList().getPlayers().forEach(player => {
+      let currentDim = player.level.dimension.toString();
   
+      let name = player.username 
       if (currentDim == 'minecraft:overworld') {
     switch (eventint) {
         case 1:
-            players.forEach(player => {
-                
-                let name = player.username 
                 if (eventtriggerer != name) {
                     server.runCommandSilent(`effect give ${name} minecraft:blindness 10 2`)
                     server.runCommandSilent(`effect give ${name} minecraft:weakness 10 2`)
                     server.runCommandSilent(`effect give ${name} minecraft:slowness 10 3`)
                 }
-            });
             break;
 
         case 2:
             
             break;
         case 3:
-            players.forEach(player => {
-                let name = player.username 
                 if (eventtriggerer != name){
                     server.runCommandSilent(`effect give ${name} minecraft:slow_falling 10 1`)
                     server.runCommandSilent(`effect give ${name} minecraft:slowness 10 4`)
                 }
-            });
             break;
 
         case 4:
-            players.forEach(player => {
-                let name = player.username 
                 if (eventtriggerer != name){
                     server.runCommandSilent(`effect give ${name} minecraft:blindness 10 2`)
                     server.runCommandSilent(`effect give ${name} minecraft:night_vision 10 1`)
                 }
-            });
             break;
-    }
+            }
       } 
     });
   });
