@@ -75,7 +75,7 @@ ServerEvents.commandRegistry(event => {
             })
     );
     event.register(
-        Commands.literal('returntothepast')
+        Commands.literal('xanastop')
             .requires(s => s.hasPermission(2))
             .executes(ctx => {
                 const server = ctx.source.server;
@@ -86,7 +86,21 @@ ServerEvents.commandRegistry(event => {
                     server.runCommandSilent(`effect clear ${name}`)
                     server.runCommandSilent(`kill @e[name="XanaCorrupted"]`)
                 });
-                server.runCommandSilent(`execute as @a run home`)
+                server.runCommandSilent(`weather clear`)
+            })
+    );
+    event.register(
+        Commands.literal('towerend')
+            .requires(s => s.hasPermission(4))
+            .executes(ctx => {
+                const server = ctx.source.server;
+                const players = server.getPlayerList().getPlayers();
+                
+                players.forEach(player => {
+                    let name = player.username 
+                    server.runCommandSilent(`effect clear ${name}`)
+                    server.runCommandSilent(`kill @e[name="XanaCorrupted"]`)
+                });
                 server.runCommandSilent(`weather clear`)
             })
     );

@@ -156,7 +156,7 @@ local function toggleTower()
             file.close()
             flashScreen(5, colors.lightBlue)
             printCentered("Tower DEACTIVATED", colors.blue)
-            rednet.send(74, {request="towerend"}, "8080")
+            rednet.send(74, {request="endtower"}, "8080")
         else
             printCentered(towerType.." Tower DEACTIVATED", colors.gray)
         end
