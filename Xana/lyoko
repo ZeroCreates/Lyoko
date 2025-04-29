@@ -279,6 +279,9 @@ while true do
             -- respond to scan
             rednet.send(param1, {response="tower", towerType=towerType}, "8080")
             
+        elseif message.request == "rift" then
+            rednet.send(param1, {response="rift", address=table.concat(gate.getLocalAddress(), "-")}, "8080")
+            
         elseif message.command == "update" then
             -- respond to scan
             os.reboot()

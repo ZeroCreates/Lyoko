@@ -185,10 +185,6 @@ local function openRift()
     end
 
     local selectedTower = towers[selection]
-    rednet.send(selectedTower.id,{command="wake"}, port)
-    term.clear()
-    printCentered("Please Wait", colors.yellow)
-    sleep(3)
     rednet.send(selectedTower.id, {request="rift"}, port)
     local event, id, message, _ = os.pullEvent()
     repeat
