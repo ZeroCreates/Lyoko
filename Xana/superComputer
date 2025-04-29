@@ -242,6 +242,10 @@ while true do
         os.shutdown()
     elseif choice == "5" then
         openRift()
+    elseif choice == "update" then
+        rednet.broadcast({command="update"}, port)
+        
+        flashScreen(10, colors.purple)
     else
         printCentered("Invalid option.", colors.red)
         sleep(2)

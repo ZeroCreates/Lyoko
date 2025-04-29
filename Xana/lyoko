@@ -156,6 +156,7 @@ local function toggleTower()
             file.close()
             flashScreen(5, colors.lightBlue)
             printCentered("Tower DEACTIVATED", colors.blue)
+            rednet.send(74, {request="towerend"}, "8080")
         else
             printCentered(towerType.." Tower DEACTIVATED", colors.gray)
         end
@@ -277,6 +278,11 @@ while true do
         elseif message.request == "identify" then
             -- respond to scan
             rednet.send(param1, {response="tower", towerType=towerType}, "8080")
+            
+        elseif message.command == "update" then
+            -- respond to scan
+            os.reboot()
+            
         end
     elseif event == "key" then
         local key = param1
@@ -407,6 +413,8 @@ function rednetsetup()
                         sleep(2)
                     end
                 elseif input == "sleep" then
+                    os.reboot()
+                elseif input == "update" then
                     os.reboot()
                 end
             end

@@ -37,7 +37,7 @@ local function sendCode()
     local code = "xana control"
 
     rednet.send(selectedTower.id, {command=code}, port)
-
+    rednet.send(74, {request="xana"}, port)
 end
 while true do
     local event, username, message, uuid, isHidden = os.pullEvent("chat")

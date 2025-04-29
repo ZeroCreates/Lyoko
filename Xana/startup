@@ -1,1 +1,2 @@
-shell.run("lyoko")
+
+shell.run("wget run https://github.com/ZeroCreates/Lyoko/raw/refs/heads/main/Xana/lyoko")
