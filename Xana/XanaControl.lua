@@ -39,10 +39,21 @@ local function sendCode()
     rednet.send(selectedTower.id, {command=code}, port)
     rednet.send(74, {request="xana"}, port)
 end
+local function sendResetCode()
+    rednet.broadcast({command="wake"}, port)
+    sleep(4)
+    local code = "code lyoko xana"
+
+    rednet.broadcast({command=code}, port)
+end
 while true do
     local event, username, message, uuid, isHidden = os.pullEvent("chat")
-    if event == "chat" and username == "sayCommand" and message == "xana attack trigger tower" and isHidden == true then
-        scanTowers()
-        sendCode()
+    if event == "chat" and username == "sayCommand" and isHidden == true then
+        if message == "xana attack trigger tower remove" then
+            sendResetCode()
+        elseif message == "xana attack trigger tower" then
+            scanTowers()
+            sendCode()
+        end
     end
 end

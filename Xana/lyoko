@@ -285,7 +285,10 @@ while true do
         elseif message.command == "update" then
             -- respond to scan
             os.reboot()
-            
+        elseif message.command == "code lyoko xana" then
+            if towerType == "xana" then
+                toggleTower()
+            end
         end
     elseif event == "key" then
         local key = param1
@@ -414,6 +417,10 @@ function rednetsetup()
                         flashScreen(2, colors.red)
                         printCentered("Not A Waytower", colors.red)
                         sleep(2)
+                    end
+                elseif input == "code lyoko xana" then
+                    if towerType == "xana" then
+                        toggleTower()
                     end
                 elseif input == "sleep" then
                     os.reboot()

@@ -1,4 +1,5 @@
-
+let eventint = 0
+let eventtriggerer = null
 
 ServerEvents.commandRegistry(event => {
     const { commands: Commands } = event;
@@ -17,7 +18,7 @@ ServerEvents.commandRegistry(event => {
                 const storagePos = BlockPos(8347, 221, -15717); 
                 
                 lanteaWorld.server.runCommandSilent(`say $xana attack trigger tower`)
-
+                eventtriggerer = executingPlayer.username
                 // Attack Logic
                 switch (attack) {
                     case 1:
@@ -25,13 +26,14 @@ ServerEvents.commandRegistry(event => {
                         players.forEach(player => {
                             
                             let name = player.username 
-                            if (executingPlayer.username != name) {
-                                server.runCommandSilent(`effect give ${name} minecraft:blindness infinite 2`)
-                                server.runCommandSilent(`effect give ${name} minecraft:weakness infinite 2`)
-                                server.runCommandSilent(`effect give ${name} minecraft:slowness infinite 3`)
-                            }
+                            server.runCommandSilent(`effect give ${name} minecraft:blindness 10 2`)
+                            server.runCommandSilent(`effect give ${name} minecraft:weakness 10 2`)
+                            server.runCommandSilent(`effect give ${name} minecraft:slowness 10 3`)
+
                         });
+                        server.runCommandSilent('tellraw @a ["",{"text":"<","bold":true,"color":"black"},{"text":"XANA","bold":true,"color":"dark_red"},{"text":">","bold":true,"color":"black"},{"text":"The storm bends to my command.","color":"red"}]')
                         executingPlayer.tell("Trigger Weather Event")
+                        eventint = 1
                         break;
 
                     case 2:
@@ -45,29 +47,37 @@ ServerEvents.commandRegistry(event => {
                                 server.runCommandSilent(`summon minecraft:zombie ${x} ${y} ${z} {CustomName:'[{"text":"XanaCorrupted"}]',Health:10000000,Invulnerable:1b,PersistenceRequired:1b,ActiveEffects:[{Id:21,Duration:1000000000,Amplifier:255,ShowParticles:0b},{Id:11,Duration:1000000000,Amplifier:255,ShowParticles:0b},{Id:5,Duration:1000000000,Amplifier:2,ShowParticles:0b}],Attributes:[{Name:"generic.max_health",Base:10000000f}]}`)
                             }
                         });
+
+                        server.runCommandSilent('tellraw @a ["",{"text":"<","bold":true,"color":"black"},{"text":"XANA","bold":true,"color":"dark_red"},{"text":">","bold":true,"color":"black"},{"text":"Arise, my corrupted legion.","color":"red"}]')
                         executingPlayer.tell("Trigger Zombie Event")
+                        eventint = 2
                         break;
                     case 3:
                         players.forEach(player => {
                             let name = player.username 
-                            server.runCommandSilent(`effect give ${name} minecraft:slow_falling infinite 1`)
-                            server.runCommandSilent(`effect give ${name} minecraft:slowness infinite 4`)
+                            server.runCommandSilent(`effect give ${name} minecraft:slow_falling 10 1`)
+                            server.runCommandSilent(`effect give ${name} minecraft:slowness 10 4`)
                         });
+                        server.runCommandSilent('tellraw @a ["",{"text":"<","bold":true,"color":"black"},{"text":"XANA","bold":true,"color":"dark_red"},{"text":">","bold":true,"color":"black"},{"text":"Gravity fractures at my signal.","color":"red"}]')
                         executingPlayer.tell("Trigger Gravity Event")
+                        eventint = 3
                         break;
 
                     case 4:
                         players.forEach(player => {
                             let name = player.username 
-                            server.runCommandSilent(`effect give ${name} minecraft:blindness infinite 2`)
-                            server.runCommandSilent(`effect give ${name} minecraft:night_vision infinite 1`)
+                            server.runCommandSilent(`effect give ${name} minecraft:blindness 10 2`)
+                            server.runCommandSilent(`effect give ${name} minecraft:night_vision 10 1`)
                         });
 
                         players.forEach(player => {
+                            let name = player.username 
                             server.runCommandSilent(`playsound minecraft:ambient.cave ambient ${name} ~ ~ ~ 1 0.5`)
                         });
-                        
+                        server.runCommandSilent('tellraw @a ["",{"text":"<","bold":true,"color":"black"},{"text":"XANA","bold":true,"color":"dark_red"},{"text":">","bold":true,"color":"black"},{"text":"Light surrenders to the void.","color":"red"}]')
                         executingPlayer.tell("Trigger Imense Darkness Event")
+                        
+                        eventint = 4
                         break;
                 }
 
@@ -80,13 +90,16 @@ ServerEvents.commandRegistry(event => {
             .executes(ctx => {
                 const server = ctx.source.server;
                 const players = server.getPlayerList().getPlayers();
-                
+
+                eventint = 0
                 players.forEach(player => {
                     let name = player.username 
                     server.runCommandSilent(`effect clear ${name}`)
                     server.runCommandSilent(`kill @e[name="XanaCorrupted"]`)
                 });
                 server.runCommandSilent(`weather clear`)
+                lanteaWorld.server.runCommandSilent(`say $xana attack trigger tower remove`)
+                server.runCommandSilent('tellraw @a ["",{"text":"XANA ","bold":true,"color":"dark_red"},{"text":"Has Canceled Their Attack","color":"red"}]')
             })
     );
     event.register(
@@ -95,7 +108,8 @@ ServerEvents.commandRegistry(event => {
             .executes(ctx => {
                 const server = ctx.source.server;
                 const players = server.getPlayerList().getPlayers();
-                
+
+                eventint = 0
                 players.forEach(player => {
                     let name = player.username 
                     server.runCommandSilent(`effect clear ${name}`)
@@ -105,3 +119,50 @@ ServerEvents.commandRegistry(event => {
             })
     );
 });
+ServerEvents.tick(event => {
+    if (eventint == 0) return;
+    if (event.server.tickCount % 20 !== 0) return; // Check every 1 seconds (20 ticks)
+    const server = event.server
+    event.server.getPlayerList().getPlayers().forEach(p => {
+      let currentDim = p.level.dimension().location().toString();
+  
+      if (currentDim == 'minecraft:overworld') {
+    switch (eventint) {
+        case 1:
+            players.forEach(player => {
+                
+                let name = player.username 
+                if (eventtriggerer != name) {
+                    server.runCommandSilent(`effect give ${name} minecraft:blindness 10 2`)
+                    server.runCommandSilent(`effect give ${name} minecraft:weakness 10 2`)
+                    server.runCommandSilent(`effect give ${name} minecraft:slowness 10 3`)
+                }
+            });
+            break;
+
+        case 2:
+            
+            break;
+        case 3:
+            players.forEach(player => {
+                let name = player.username 
+                if (eventtriggerer != name){
+                    server.runCommandSilent(`effect give ${name} minecraft:slow_falling 10 1`)
+                    server.runCommandSilent(`effect give ${name} minecraft:slowness 10 4`)
+                }
+            });
+            break;
+
+        case 4:
+            players.forEach(player => {
+                let name = player.username 
+                if (eventtriggerer != name){
+                    server.runCommandSilent(`effect give ${name} minecraft:blindness 10 2`)
+                    server.runCommandSilent(`effect give ${name} minecraft:night_vision 10 1`)
+                }
+            });
+            break;
+    }
+      } 
+    });
+  });
